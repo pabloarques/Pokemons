@@ -1,6 +1,8 @@
 package com.example.pokemons;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,14 +11,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.example.pokemons.databinding.FragmentFirstBinding;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,7 +32,8 @@ public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
     private ArrayList<Pokemon> items;
-    private ArrayAdapter<Pokemon> adapter;
+    private PokemonsAdapter adapter;
+
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
@@ -43,10 +51,9 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-         items = new ArrayList<Pokemon>();
-         adapter = new ArrayAdapter<>(
+         items = new ArrayList<>();
+         adapter = new PokemonsAdapter(
                 getContext(),
-                R.layout.lv_pokemon_row,
                 R.id.txtPoke,
                 items
         );
@@ -54,6 +61,38 @@ public class FirstFragment extends Fragment {
         binding.lvPokemon.setAdapter(adapter);
         refresh();
     }
+
+    class PokemonsAdapter extends ArrayAdapter<Pokemon> {
+        public PokemonsAdapter(Context context, int resource, List<Pokemon> objects) {
+            super(context, resource, objects);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent){
+
+            Pokemon pokemon = getItem(position);
+
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(R.layout.lv_pokemon_row, parent, false);
+            }
+
+            //union del codigo en las views del layout
+
+            TextView txtPoke = convertView.findViewById(R.id.txtPoke);
+            ImageView img_poke = convertView.findViewById(R.id.img_poke);
+
+            txtPoke.setText(pokemon.getNombre());
+
+            Glide.with(getContext()).load(
+                    pokemon.getImage()
+            ).into(img_poke);
+
+            return convertView;
+        }
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -67,6 +106,7 @@ public class FirstFragment extends Fragment {
 
 
     private void refresh(){
+        Toast.makeText(getContext(), "Refrescando...", Toast.LENGTH_LONG).show();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
